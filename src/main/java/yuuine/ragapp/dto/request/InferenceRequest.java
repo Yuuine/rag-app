@@ -10,7 +10,4 @@ public class InferenceRequest {
 
     private Integer topK = 5;
 
-    // LLM 生成温度，控制创造性，默认 0.7
-    private Double temperature = 0.7;
-
 }

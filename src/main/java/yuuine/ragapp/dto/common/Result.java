@@ -1,4 +1,4 @@
-package yuuine.ragapp.common;
+package yuuine.ragapp.dto.common;
 
 
 import lombok.AllArgsConstructor;

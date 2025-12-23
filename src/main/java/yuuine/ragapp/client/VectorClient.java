@@ -4,8 +4,10 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import yuuine.ragapp.dto.request.InferenceRequest;
 import yuuine.ragapp.dto.request.VectorAddRequest;
 import yuuine.ragapp.dto.request.VectorAddResult;
+import yuuine.ragapp.ragVectorService.VectorSearchResult;
 
 import java.util.List;
 
@@ -16,6 +18,8 @@ public interface VectorClient {
     VectorAddResult add(
             @RequestBody List<VectorAddRequest> chunks);
 
-//    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE)
-
+    @PostMapping(value = "/vectors/search", consumes = MediaType.APPLICATION_JSON_VALUE)
+    List<VectorSearchResult> search(
+            @RequestBody InferenceRequest query
+    );
 }

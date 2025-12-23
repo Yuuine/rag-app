@@ -3,10 +3,11 @@ package yuuine.ragapp.ragVectorService.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import yuuine.ragapp.client.VectorClient;
+import yuuine.ragapp.dto.request.InferenceRequest;
 import yuuine.ragapp.dto.request.VectorAddRequest;
 import yuuine.ragapp.dto.request.VectorAddResult;
-import yuuine.ragapp.dto.response.RagIngestResponse;
 import yuuine.ragapp.ragVectorService.RagVectorService;
+import yuuine.ragapp.ragVectorService.VectorSearchResult;
 
 import java.util.List;
 
@@ -24,5 +25,16 @@ public class RagVectorServiceImpl implements RagVectorService {
             throw new RuntimeException("Vector service failed");
         }
         return vectorAddResult;
+    }
+
+    @Override
+    public List<VectorSearchResult> search(InferenceRequest query) {
+
+        List<VectorSearchResult> vectorSearchResults = vectorClient.search(query);
+        if (vectorSearchResults == null) {
+            throw new RuntimeException("Vector service failed");
+        }
+
+        return vectorSearchResults;
     }
 }
