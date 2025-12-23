@@ -25,30 +25,43 @@ public class RagInferenceServiceImpl implements RagInferenceService {
     @Override
     public RagInferenceResponse inference(InferenceRequest appRequest,
                                           List<VectorSearchResult> vectorSearchResults) {
+        log.debug("开始推理，查询: {}", appRequest.getQuery());
+        log.info("推理请求，查询: {}", appRequest.getQuery());
+        log.debug("向量搜索结果数量: {}", vectorSearchResults.size());
+
         try {
             // 构建上下文
             String context = buildContext(vectorSearchResults);
+            log.debug("上下文构建完成，长度: {}", context.length());
 
             // 从配置中获取系统提示词
             String systemPrompt = ragPromptProperties.getSystemPrompt();
+            log.debug("系统提示词长度: {}", systemPrompt.length());
 
             // 构建用户提示词
             String userPrompt = buildUserPrompt(context, appRequest.getQuery());
+            log.debug("用户提示词长度: {}", userPrompt.length());
 
             // 组合最终提示词 - 将系统提示词和用户提示词合并
             String combinedPrompt = systemPrompt + "\n\n" + userPrompt;
+            log.debug("组合提示词长度: {}", combinedPrompt.length());
 
             // 构造发送给推理服务的请求 - 使用合并后的提示词
             InferenceRequest inferenceReq = buildInferenceRequest(combinedPrompt);
+            log.debug("推理请求构建完成");
 
             // 调用推理服务
+            log.info("调用推理服务，查询: {}", appRequest.getQuery());
             InferenceResponse inferenceResponse = inferenceClient.chat(inferenceReq);
+            log.info("推理服务调用完成，查询: {}", appRequest.getQuery());
 
             // 封装返回结果
-            return buildResponse(appRequest, inferenceResponse, vectorSearchResults);
+            RagInferenceResponse result = buildResponse(appRequest, inferenceResponse, vectorSearchResults);
+            log.debug("推理完成，答案长度: {}", result.getAnswer().length());
 
+            return result;
         } catch (Exception e) {
-            log.error("推理服务调用失败", e);
+            log.error("推理服务调用失败，查询: {}", appRequest.getQuery(), e);
             throw new RuntimeException("推理服务调用失败: " + e.getMessage(), e);
         }
     }
