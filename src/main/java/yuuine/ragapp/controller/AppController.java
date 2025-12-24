@@ -74,12 +74,11 @@ public class AppController {
             // 1. 调用 rag-vector 服务，将搜索语句向量化处理，得到结果列表
             List<VectorSearchResult> vectorSearchResults
                     = ragVectorService.search(query);
-            log.debug("向量搜索完成，找到 {} 个结果", vectorSearchResults.size());
 
             // 2. 调用 rag-inference 服务，将问题和得到的结果列表传入 LLM 模型进行推理
             RagInferenceResponse ragInferenceResponse =
                     ragInferenceService.inference(query, vectorSearchResults);
-            log.info("推理完成，查询: {}", query.getQuery());
+            log.info("-----------------------------------------------------------");
 
             // 3. 返回结果
             return Result.success(ragInferenceResponse.getAnswer());
