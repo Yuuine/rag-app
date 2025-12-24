@@ -11,7 +11,7 @@ RAG 应用聚合服务是一个检索增强生成（RAG）系统的中央聚合�
 ### 环境要求
 
 - Java 17+
-- Spring Boot 4.0.1
+- Spring Boot 4.x
 - 三个独立的下游服务：
     - RAG Ingestion 服务（文档解析服务）
     - RAG Vector 服务（向量存储与检索服务）
@@ -50,7 +50,7 @@ rag:
 2. **问答检索流程**：
     - 用户提交问题 → 调用RAG Vector服务进行语义检索 → 调用RAG Inference服务生成答案 → 返回用户
 
-### 致谢
+## 致谢
 
 - OpenFeign 客户端 [OpenFeign](https://github.com/OpenFeign/feign)
 - 微服务架构支持 [Spring Cloud](https://spring.io/projects/spring-cloud)

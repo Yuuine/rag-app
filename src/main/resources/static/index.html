@@ -3,31 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAG 文档问答系统</title>
+    <title>潇潇知识助手</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             margin: 0;
-            padding: 40px 20px;
+            padding: 20px;
             background-color: #f0f2f5;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* 中央聊天卡片容器 */
         .chat-card {
             width: 100%;
             max-width: 800px;
+            height: 90vh;
+            min-height: 600px;
+            max-height: 900px;
             background: white;
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 80vh; /* 高度占屏幕80%，留出上下空白 */
-            min-height: 600px;
         }
 
         header {
@@ -38,6 +40,7 @@
             font-weight: 500;
             position: relative;
             text-align: center;
+            flex-shrink: 0;
         }
 
         .upload-trigger {
@@ -52,7 +55,10 @@
             height: 40px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 22px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .upload-trigger:hover {
@@ -79,7 +85,7 @@
             max-width: 70%;
             padding: 10px 16px;
             border-radius: 18px;
-            line-height: 1.5;
+            line-height: 1.7;
             word-wrap: break-word;
         }
 
@@ -98,46 +104,157 @@
             border-bottom-left-radius: 4px;
         }
 
-        .input-section {
-            padding: 16px 24px;
-            background: white;
+        /* Markdown 样式保持不变（略） */
+        .message.ai h1, .message.ai h2, .message.ai h3 {
+            margin: 1em 0 0.6em;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .message.ai h1 {
+            font-size: 1.4em;
+        }
+
+        .message.ai h2 {
+            font-size: 1.3em;
+        }
+
+        .message.ai h3 {
+            font-size: 1.2em;
+        }
+
+        .message.ai p {
+            margin: 0.8em 0;
+        }
+
+        .message.ai ul, .message.ai ol {
+            padding-left: 1.6em;
+            margin: 0.8em 0;
+        }
+
+        .message.ai li {
+            margin: 0.4em 0;
+        }
+
+        .message.ai strong {
+            font-weight: 600;
+        }
+
+        .message.ai em {
+            font-style: italic;
+        }
+
+        .message.ai code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .message.ai pre {
+            background: #f6f8fa;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.8em 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message.ai pre code {
+            background: none;
+            padding: 0;
+            font-size: 0.95em;
+        }
+
+        .message.ai blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 16px;
+            margin: 0.8em 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        .message.ai hr {
+            border: none;
             border-top: 1px solid #eee;
+            margin: 1.2em 0;
+        }
+
+        .message.ai table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.8em 0;
+        }
+
+        .message.ai table th,
+        .message.ai table td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .message.ai table th {
+            background-color: #f8f9fa;
+        }
+
+        .message.ai img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 0.8em 0;
+        }
+
+        .input-section {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
         }
 
         #questionInput {
-            width: 100%;
+            flex: 1;
             padding: 12px 16px;
             border: 1px solid #ddd;
-            border-radius: 24px;
+            border-radius: 20px;
             font-size: 1.05em;
+            line-height: 1.5;
             resize: none;
-            min-height: 48px;
+            min-height: 40px;
             max-height: 120px;
             box-sizing: border-box;
+            font-family: inherit;
+            background: white;
+            overflow-y: auto;
         }
 
         #questionInput:focus {
             outline: none;
             border-color: #0084ff;
+            box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.15);
         }
 
-        .input-actions {
-            margin-top: 12px;
-            text-align: right;
+        #questionInput::placeholder {
+            color: #aaa;
         }
 
         .btn-send {
             background: #0084ff;
             color: white;
             border: none;
-            padding: 10px 28px;
-            border-radius: 24px;
+            padding: 0 24px;
+            height: 40px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 1em;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .btn-send:disabled {
-            background: #ccc;
+            background: #bbb;
             cursor: not-allowed;
         }
 
@@ -159,7 +276,37 @@
             }
         }
 
-        /* 上传面板：相对中央容器定位 */
+        .toast {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 200px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .upload-modal {
             display: none;
             position: absolute;
@@ -206,32 +353,33 @@
             cursor: pointer;
         }
 
-        .status {
-            margin-top: 10px;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 0.9em;
-            text-align: center;
-        }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
         @media (max-width: 768px) {
             body {
-                padding: 20px 10px;
+                padding: 10px;
+                align-items: flex-start;
             }
 
             .chat-card {
-                height: 90vh;
-                border-radius: 12px;
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+
+            .input-section {
+                padding: 10px 12px;
+                gap: 10px;
+            }
+
+            #questionInput {
+                padding: 10px 14px;
+                font-size: 16px;
+            }
+
+            /* 防止 iOS 缩放 */
+            .toast {
+                top: 15%;
+                width: 80%;
+                max-width: 300px;
             }
 
             .upload-modal {
@@ -241,30 +389,24 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-<!-- 中央聊天卡片 -->
 <div class="chat-card">
     <header>
-        RAG 文档问答系统
-        <button class="upload-trigger" id="uploadTrigger" title="上传文档">📎</button>
+        潇潇知识助手
+        <button class="upload-trigger" id="uploadTrigger" title="上传文档" aria-label="上传文档">↑</button>
     </header>
 
     <div class="chat-container">
-        <div id="messagesContainer">
-            <!-- 聊天记录动态插入此处 -->
-        </div>
+        <div id="messagesContainer"></div>
 
         <div class="input-section">
-            <textarea id="questionInput" placeholder="输入问题，按 Enter 发送..."></textarea>
-            <div class="input-actions">
-                <button id="sendBtn" class="btn-send">发送</button>
-            </div>
-            <div id="searchStatus"></div>
+            <textarea id="questionInput" placeholder="输入问题，按 Enter 发送（Shift+Enter 换行）..."></textarea>
+            <button id="sendBtn" class="btn-send">发送</button>
         </div>
     </div>
 
-    <!-- 上传面板（相对卡片定位） -->
     <div class="upload-modal" id="uploadModal">
         <h3>上传文档</h3>
         <div class="upload-area">
@@ -272,23 +414,29 @@
             <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt,.md">
         </div>
         <button id="uploadBtn" class="btn-upload">上传文件</button>
-        <div id="uploadStatus" class="status"></div>
     </div>
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const messagesContainer = document.getElementById('messagesContainer');
         const questionInput = document.getElementById('questionInput');
         const sendBtn = document.getElementById('sendBtn');
-        const searchStatus = document.getElementById('searchStatus');
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
-        const uploadStatus = document.getElementById('uploadStatus');
         const uploadTrigger = document.getElementById('uploadTrigger');
         const uploadModal = document.getElementById('uploadModal');
+        const toast = document.getElementById('toast');
 
-        // 上传面板切换
+        function showToast(message, type = 'error') {
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
         uploadTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
             uploadModal.classList.toggle('active');
@@ -300,17 +448,14 @@
             }
         });
 
-        // 文件上传逻辑
         uploadBtn.addEventListener('click', function () {
             if (fileInput.files.length === 0) {
-                showStatus(uploadStatus, '请选择文件', 'error');
+                showToast('请选择文件', 'error');
                 return;
             }
 
             const formData = new FormData();
-            for (let file of fileInput.files) {
-                formData.append('files', file);
-            }
+            for (let file of fileInput.files) formData.append('files', file);
 
             uploadBtn.disabled = true;
             uploadBtn.textContent = '上传中...';
@@ -319,20 +464,19 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.code === 0) {
-                        showStatus(uploadStatus, '上传成功！文档已加载', 'success');
+                        showToast('上传成功！文档已加载', 'success');
                         fileInput.value = '';
                     } else {
-                        showStatus(uploadStatus, '上传失败：' + data.message, 'error');
+                        showToast('上传失败，请稍后重试', 'error');
                     }
                 })
-                .catch(err => showStatus(uploadStatus, '异常：' + err.message, 'error'))
+                .catch(() => showToast('上传失败，请检查网络或稍后重试', 'error'))
                 .finally(() => {
                     uploadBtn.disabled = false;
                     uploadBtn.textContent = '上传文件';
                 });
         });
 
-        // 添加用户消息
         function addUserMessage(text) {
             const div = document.createElement('div');
             div.className = 'message user';
@@ -341,25 +485,23 @@
             scrollToBottom();
         }
 
-        // 添加 AI 消息
-        function addAiMessage(text) {
+        function renderAiMessage(text) {
             const div = document.createElement('div');
             div.className = 'message ai';
-            div.textContent = text || '[无回答]';
+            const html = marked.parse(text);
+            div.innerHTML = html;
             messagesContainer.appendChild(div);
             scrollToBottom();
         }
 
-        // 滚动到底部
         function scrollToBottom() {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // 发送问题
         function sendQuestion() {
             const question = questionInput.value.trim();
             if (!question) {
-                showStatus(searchStatus, '请输入问题', 'error');
+                showToast('请输入问题', 'error');
                 return;
             }
 
@@ -367,7 +509,7 @@
             questionInput.value = '';
 
             sendBtn.disabled = true;
-            sendBtn.innerHTML = '<span class="loading"></span>思考中...';
+            sendBtn.innerHTML = '<span class="loading"></span>发送中';
 
             fetch('/app/search', {
                 method: 'POST',
@@ -378,14 +520,14 @@
                 .then(data => {
                     if (data.code === 0) {
                         const result = data.data;
-                        const answer = result.answer || result || '[空回答]';
-                        addAiMessage(answer);
+                        const answer = result.answer || result || '[无回答]';
+                        renderAiMessage(answer);
                     } else {
-                        addAiMessage('[错误] ' + data.message);
+                        renderAiMessage('抱歉，当前无法回答，请稍后重试');
                     }
                 })
-                .catch(err => {
-                    addAiMessage('[异常] ' + err.message);
+                .catch(() => {
+                    renderAiMessage('请求失败，请检查网络或稍后重试');
                 })
                 .finally(() => {
                     sendBtn.disabled = false;
@@ -401,12 +543,6 @@
                 sendQuestion();
             }
         });
-
-        function showStatus(el, msg, type) {
-            el.textContent = msg;
-            el.className = 'status ' + type;
-            setTimeout(() => el.textContent = '', 5000);
-        }
     });
 </script>
 </body>
