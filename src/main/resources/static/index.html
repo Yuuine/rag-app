@@ -20,10 +20,10 @@
 
         .chat-card {
             width: 100%;
-            max-width: 800px;
-            height: 90vh;
-            min-height: 600px;
-            max-height: 900px;
+            max-width: 1000px;
+            height: 95vh;
+            min-height: 700px;
+            max-height: 1000px;
             background: white;
             border-radius: 16px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
@@ -41,13 +41,22 @@
             position: relative;
             text-align: center;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .upload-trigger {
+        .header-controls {
             position: absolute;
             right: 24px;
             top: 50%;
             transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .upload-trigger {
             background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
@@ -63,6 +72,85 @@
 
         .upload-trigger:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+
+        .time-toggle-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 76px;
+            height: 34px;
+        }
+
+        .time-toggle-checkbox {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .time-toggle-label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .time-toggle-label:before {
+            position: absolute;
+            content: "";
+            height: 28px;
+            width: 28px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .time-toggle-checkbox:checked + .time-toggle-label {
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .time-toggle-checkbox:checked + .time-toggle-label:before {
+            transform: translateX(42px);
+        }
+
+        .time-toggle-text {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85em; /* 稍增大字体 */
+            font-weight: 500;
+            color: white;
+            pointer-events: none;
+        }
+
+        .time-toggle-text.on {
+            left: 10px;
+        }
+
+        .time-toggle-text.off {
+            right: 10px;
+        }
+
+        .time-toggle-checkbox:checked ~ .time-toggle-text.on {
+            opacity: 1;
+        }
+
+        .time-toggle-checkbox:checked ~ .time-toggle-text.off {
+            opacity: 0.4;
+        }
+
+        .time-toggle-checkbox:not(:checked) ~ .time-toggle-text.on {
+            opacity: 0.4;
+        }
+
+        .time-toggle-checkbox:not(:checked) ~ .time-toggle-text.off {
+            opacity: 1;
         }
 
         .chat-container {
@@ -104,7 +192,29 @@
             border-bottom-left-radius: 4px;
         }
 
-        /* Markdown 样式保持不变（略） */
+        .message .timestamp {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .message.user .timestamp {
+            text-align: right;
+        }
+
+        .message.ai .timestamp {
+            text-align: left;
+        }
+
+        .message .footnote {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 8px;
+            border-top: 1px solid #eee;
+            padding-top: 4px;
+        }
+
         .message.ai h1, .message.ai h2, .message.ai h3 {
             margin: 1em 0 0.6em;
             font-weight: 600;
@@ -187,8 +297,7 @@
             margin: 0.8em 0;
         }
 
-        .message.ai table th,
-        .message.ai table td {
+        .message.ai table th, .message.ai table td {
             border: 1px solid #ddd;
             padding: 8px 12px;
             text-align: left;
@@ -205,24 +314,24 @@
         }
 
         .input-section {
-            padding: 12px 16px;
+            padding: 16px 24px;
             background: #f8f9fa;
             border-top: 1px solid #eee;
             flex-shrink: 0;
             display: flex;
-            align-items: flex-end;
-            gap: 12px;
+            align-items: center;
+            gap: 16px;
         }
 
         #questionInput {
             flex: 1;
             padding: 12px 16px;
             border: 1px solid #ddd;
-            border-radius: 20px;
+            border-radius: 24px;
             font-size: 1.05em;
             line-height: 1.5;
             resize: none;
-            min-height: 40px;
+            min-height: 48px;
             max-height: 120px;
             box-sizing: border-box;
             font-family: inherit;
@@ -233,7 +342,7 @@
         #questionInput:focus {
             outline: none;
             border-color: #0084ff;
-            box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.15);
         }
 
         #questionInput::placeholder {
@@ -244,9 +353,9 @@
             background: #0084ff;
             color: white;
             border: none;
-            padding: 0 24px;
-            height: 40px;
-            border-radius: 20px;
+            padding: 0 28px;
+            height: 48px;
+            border-radius: 24px;
             cursor: pointer;
             font-size: 1em;
             flex-shrink: 0;
@@ -352,42 +461,6 @@
             border-radius: 6px;
             cursor: pointer;
         }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-                align-items: flex-start;
-            }
-
-            .chat-card {
-                height: 100vh;
-                max-height: none;
-                border-radius: 0;
-            }
-
-            .input-section {
-                padding: 10px 12px;
-                gap: 10px;
-            }
-
-            #questionInput {
-                padding: 10px 14px;
-                font-size: 16px;
-            }
-
-            /* 防止 iOS 缩放 */
-            .toast {
-                top: 15%;
-                width: 80%;
-                max-width: 300px;
-            }
-
-            .upload-modal {
-                width: calc(100% - 48px);
-                left: 24px;
-                right: 24px;
-            }
-        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -395,18 +468,23 @@
 <div class="chat-card">
     <header>
         潇潇知识助手
-        <button class="upload-trigger" id="uploadTrigger" title="上传文档" aria-label="上传文档">↑</button>
+        <div class="header-controls">
+            <div class="time-toggle-wrapper">
+                <input type="checkbox" id="timeToggle" class="time-toggle-checkbox">
+                <label for="timeToggle" class="time-toggle-label"></label>
+                <span class="time-toggle-text on">ON</span>
+                <span class="time-toggle-text off">OFF</span>
+            </div>
+            <button class="upload-trigger" id="uploadTrigger" title="上传文档" aria-label="上传文档">↑</button>
+        </div>
     </header>
-
     <div class="chat-container">
         <div id="messagesContainer"></div>
-
         <div class="input-section">
             <textarea id="questionInput" placeholder="输入问题，按 Enter 发送（Shift+Enter 换行）..."></textarea>
             <button id="sendBtn" class="btn-send">发送</button>
         </div>
     </div>
-
     <div class="upload-modal" id="uploadModal">
         <h3>上传文档</h3>
         <div class="upload-area">
@@ -416,9 +494,7 @@
         <button id="uploadBtn" class="btn-upload">上传文件</button>
     </div>
 </div>
-
 <div id="toast" class="toast"></div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const messagesContainer = document.getElementById('messagesContainer');
@@ -427,8 +503,10 @@
         const fileInput = document.getElementById('fileInput');
         const uploadBtn = document.getElementById('uploadBtn');
         const uploadTrigger = document.getElementById('uploadTrigger');
+        const timeToggle = document.getElementById('timeToggle');
         const uploadModal = document.getElementById('uploadModal');
         const toast = document.getElementById('toast');
+        let showTimestamps = false;
 
         function showToast(message, type = 'error') {
             toast.textContent = message;
@@ -442,6 +520,15 @@
             uploadModal.classList.toggle('active');
         });
 
+        timeToggle.addEventListener('change', () => {
+            showTimestamps = timeToggle.checked;
+            const timestamps = document.querySelectorAll('.timestamp');
+            timestamps.forEach(ts => {
+                ts.style.display = showTimestamps ? 'block' : 'none';
+            });
+            showToast(showTimestamps ? '时间显示已开启' : '时间显示已关闭', 'success');
+        });
+
         document.addEventListener('click', (e) => {
             if (!uploadModal.contains(e.target) && !uploadTrigger.contains(e.target)) {
                 uploadModal.classList.remove('active');
@@ -453,13 +540,10 @@
                 showToast('请选择文件', 'error');
                 return;
             }
-
             const formData = new FormData();
             for (let file of fileInput.files) formData.append('files', file);
-
             uploadBtn.disabled = true;
             uploadBtn.textContent = '上传中...';
-
             fetch('/app/upload', {method: 'POST', body: formData})
                 .then(res => res.json())
                 .then(data => {
@@ -481,15 +565,29 @@
             const div = document.createElement('div');
             div.className = 'message user';
             div.textContent = text;
+            const timestamp = document.createElement('div');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = new Date().toLocaleString();
+            timestamp.style.display = showTimestamps ? 'block' : 'none';
+            div.appendChild(timestamp);
             messagesContainer.appendChild(div);
             scrollToBottom();
         }
 
-        function renderAiMessage(text) {
+        function renderAiMessage(text, duration) {
             const div = document.createElement('div');
             div.className = 'message ai';
             const html = marked.parse(text);
             div.innerHTML = html;
+            const timestamp = document.createElement('div');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = new Date().toLocaleString();
+            timestamp.style.display = showTimestamps ? 'block' : 'none';
+            div.appendChild(timestamp);
+            const footnote = document.createElement('div');
+            footnote.className = 'footnote';
+            footnote.textContent = `推理耗时: ${duration} 秒`;
+            div.appendChild(footnote);
             messagesContainer.appendChild(div);
             scrollToBottom();
         }
@@ -504,13 +602,11 @@
                 showToast('请输入问题', 'error');
                 return;
             }
-
             addUserMessage(question);
             questionInput.value = '';
-
             sendBtn.disabled = true;
-            sendBtn.innerHTML = '<span class="loading"></span>发送中';
-
+            sendBtn.innerHTML = '<span class="loading"></span>思考中';
+            const startTime = new Date();
             fetch('/app/search', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -518,16 +614,20 @@
             })
                 .then(res => res.json())
                 .then(data => {
+                    const endTime = new Date();
+                    const duration = ((endTime - startTime) / 1000).toFixed(2);
                     if (data.code === 0) {
                         const result = data.data;
                         const answer = result.answer || result || '[无回答]';
-                        renderAiMessage(answer);
+                        renderAiMessage(answer, duration);
                     } else {
-                        renderAiMessage('抱歉，当前无法回答，请稍后重试');
+                        renderAiMessage('抱歉，当前无法回答，请稍后重试', duration);
                     }
                 })
                 .catch(() => {
-                    renderAiMessage('请求失败，请检查网络或稍后重试');
+                    const endTime = new Date();
+                    const duration = ((endTime - startTime) / 1000).toFixed(2);
+                    renderAiMessage('请求失败，请检查网络或稍后重试', duration);
                 })
                 .finally(() => {
                     sendBtn.disabled = false;
