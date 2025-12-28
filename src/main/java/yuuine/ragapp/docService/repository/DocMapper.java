@@ -21,4 +21,9 @@ public interface DocMapper {
     List<RagDocuments> getDoc();
 
     int batchDeleteByFileMd5(@Param("list") List<String> fileMd5s);
+
+
+    @Select("SELECT COUNT(*) FROM rag_documents WHERE file_md5 = #{fileMd5}")
+    int countByFileMd5(String fileMd5);
+
 }

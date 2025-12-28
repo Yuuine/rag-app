@@ -71,7 +71,7 @@ public class AppController {
             return Result.success(vectorAddResult);
         } catch (Exception e) {
             log.error("上传处理失败", e);
-            return Result.error("上传处理失败: " + e.getMessage());
+            return Result.error("上传处理失败");
         }
     }
 

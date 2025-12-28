@@ -24,9 +24,13 @@ public class DocServiceImpl implements DocService {
 
     @Override
     public void saveDoc(String fileMd5, String fileName) {
+        // 检查是否已存在相同MD5的文档
+        int count = docMapper.countByFileMd5(fileMd5);
+        if (count > 0) {
+            throw new RuntimeException("该文件已存在");
+        }
 
         docMapper.saveDoc(fileMd5, fileName, LocalDateTime.now());
-
     }
 
     @Override
