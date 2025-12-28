@@ -475,6 +475,7 @@
                 <span class="time-toggle-text on">ON</span>
                 <span class="time-toggle-text off">OFF</span>
             </div>
+            <button class="upload-trigger" id="viewDocsTrigger" title="查看文档" aria-label="查看文档" style="margin-right: 8px;">📄</button>
             <button class="upload-trigger" id="uploadTrigger" title="上传文档" aria-label="上传文档">↑</button>
         </div>
     </header>
@@ -643,6 +644,9 @@
                 sendQuestion();
             }
         });
+    });
+    document.getElementById('viewDocsTrigger').addEventListener('click', () => {
+        window.open('/docs.html', '_blank');
     });
 </script>
 </body>

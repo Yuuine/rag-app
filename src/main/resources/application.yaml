@@ -22,6 +22,17 @@ spring:
   application:
     name: rag-app
 
+  datasource:
+    url: jdbc:mysql://localhost:3306/rag?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+
   servlet:
     multipart:
       enabled: true

@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import yuuine.ragapp.docService.DocService;
 import yuuine.ragapp.dto.common.Result;
 import yuuine.ragapp.dto.request.InferenceRequest;
 import yuuine.ragapp.dto.request.VectorAddRequest;
 import yuuine.ragapp.dto.request.VectorAddResult;
+import yuuine.ragapp.dto.response.DocList;
 import yuuine.ragapp.dto.response.RagInferenceResponse;
 import yuuine.ragapp.dto.response.RagIngestResponse;
 import yuuine.ragapp.ragInferenceService.RagInferenceService;
@@ -26,6 +28,7 @@ public class AppController {
     private final RagIngestService ragIngestService;
     private final RagVectorService ragVectorService;
     private final RagInferenceService ragInferenceService;
+    private final DocService docService;
 
     @PostMapping("/upload")
     public Result<Object> upload(
@@ -54,6 +57,14 @@ public class AppController {
             log.debug("准备向量存储，chunks数量: {}", chunks.size());
             VectorAddResult vectorAddResult =
                     ragVectorService.add(chunks);
+
+            // 持久化到 MySQL
+            docService.saveDoc(
+                    chunkResponses.get(0).getFileMd5(),
+                    chunkResponses.get(0).getSource()
+            );
+            log.info("文件 MySQL 持久化完成");
+
             log.info("文件上传处理完成，成功: {}, 失败: {}",
                     vectorAddResult.getSuccessChunk(), vectorAddResult.getFailedChunk());
 
@@ -63,6 +74,15 @@ public class AppController {
             return Result.error("上传处理失败: " + e.getMessage());
         }
     }
+
+    @GetMapping("/getDoc")
+    public Result<Object> getDoc(
+    ) {
+        DocList docList = docService.getDoc();
+
+        return Result.success(docList);
+    }
+
 
     @PostMapping("/search")
     public Result<Object> search(
