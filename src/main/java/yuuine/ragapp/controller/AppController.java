@@ -17,7 +17,9 @@ import yuuine.ragapp.ragIngestService.RagIngestService;
 import yuuine.ragapp.ragVectorService.RagVectorService;
 import yuuine.ragapp.ragVectorService.VectorSearchResult;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @RestController
@@ -58,12 +60,17 @@ public class AppController {
             VectorAddResult vectorAddResult =
                     ragVectorService.add(chunks);
 
-            // 持久化到 MySQL
-            docService.saveDoc(
-                    chunkResponses.get(0).getFileMd5(),
-                    chunkResponses.get(0).getSource()
-            );
-            log.info("文件 MySQL 持久化完成");
+            // 3. 提取唯一文件并持久化到 MySQL
+            Set<String> seenMd5s = new HashSet<>();
+            for (var chunk : ragIngestResponse.getChunks()) {
+                String md5 = chunk.getFileMd5();
+                if (seenMd5s.contains(md5)) continue;
+
+                docService.saveDoc(md5, chunk.getSource());
+                seenMd5s.add(md5);
+            }
+            log.info("文件 MySQL 持久化完成，共 {} 个文件", seenMd5s.size());
+
 
             log.info("文件上传处理完成，成功: {}, 失败: {}",
                     vectorAddResult.getSuccessChunk(), vectorAddResult.getFailedChunk());
