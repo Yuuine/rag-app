@@ -22,4 +22,9 @@ public interface VectorClient {
     List<VectorSearchResult> search(
             @RequestBody InferenceRequest query
     );
+
+    @PostMapping(value = "/vectors/delete", consumes = MediaType.APPLICATION_JSON_VALUE)
+    void deleteChunksByFileMd5s(
+            @RequestBody List<String> fileMd5s
+    );
 }

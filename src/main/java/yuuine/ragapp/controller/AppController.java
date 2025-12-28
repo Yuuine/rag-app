@@ -83,6 +83,17 @@ public class AppController {
         return Result.success(docList);
     }
 
+    @PostMapping("/delete")
+    public Result<Object> deleteDocuments(
+            @RequestBody List<String> fileMd5s
+    ) {
+        if (fileMd5s == null || fileMd5s.isEmpty()) {
+            return Result.error("fileMd5 列表不能为空");
+        }
+        docService.deleteDocuments(fileMd5s);
+        return Result.success();
+    }
+
 
     @PostMapping("/search")
     public Result<Object> search(

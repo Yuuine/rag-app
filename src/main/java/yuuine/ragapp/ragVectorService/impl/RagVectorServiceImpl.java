@@ -58,4 +58,11 @@ public class RagVectorServiceImpl implements RagVectorService {
             throw new RuntimeException("Vector service failed: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public void deleteChunksByFileMd5s(List<String> fileMd5s) {
+
+        vectorClient.deleteChunksByFileMd5s(fileMd5s);
+
+    }
 }

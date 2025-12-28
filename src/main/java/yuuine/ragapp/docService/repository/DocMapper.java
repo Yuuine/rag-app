@@ -19,4 +19,6 @@ public interface DocMapper {
     @Select("SELECT id, file_md5, file_name, created_at " +
             "FROM rag_documents ORDER BY created_at DESC")
     List<RagDocuments> getDoc();
+
+    int batchDeleteByFileMd5(@Param("list") List<String> fileMd5s);
 }

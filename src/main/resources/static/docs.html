@@ -70,17 +70,140 @@
             cursor: pointer;
             font-size: 1em;
         }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .batch-actions {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .batch-delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .batch-delete-btn:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+
+        /* 确认模态框 - 调整为页面中间偏上 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: flex-start; /* 改为从顶部对齐 */
+            padding-top: 20vh; /* 距离顶部 20% 视口高度 */
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .modal-cancel {
+            background: #eee;
+            color: #333;
+        }
+
+        .modal-confirm {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Toast 提示 - 移至右上角，便于查看 */
+        .toast {
+            position: fixed;
+            top: 30px; /* 距离顶部 30px */
+            right: 30px;
+            min-width: 200px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 2000;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <header>已上传文档列表</header>
     <div class="list">
+        <div class="batch-actions">
+            <label><input type="checkbox" id="selectAll"> 全选</label>
+            <button class="batch-delete-btn" id="batchDeleteBtn" disabled>批量删除</button>
+        </div>
         <table id="docTable">
             <thead>
             <tr>
+                <th><input type="checkbox" id="headerCheckbox" style="display:none;"></th>
                 <th>文档名称</th>
                 <th>创建时间</th>
+                <th>操作</th>
             </tr>
             </thead>
             <tbody></tbody>
@@ -90,37 +213,70 @@
     <button class="back-btn" onclick="window.close()">关闭页面</button>
 </div>
 
+<!-- 确认删除模态框 -->
+<div class="modal" id="confirmModal">
+    <div class="modal-content">
+        <h3>确认删除</h3>
+        <p id="modalMessage">确定要删除选中的文档吗？<br>删除后无法恢复！</p>
+        <div class="modal-buttons">
+            <button class="modal-btn modal-cancel" id="cancelDelete">取消</button>
+            <button class="modal-btn modal-confirm" id="confirmDelete">确认删除</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 提示 -->
+<div id="toast" class="toast"></div>
+
 <script>
+    function showToast(message, type = 'error') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast ' + type;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
     function formatDateTime(dateTimeStr) {
-        if (!dateTimeStr) {
-            return '未知时间';
+        return dateTimeStr || '未知时间';
+    }
+
+    let toDeleteMd5s = []; // 待删除的 fileMd5 列表
+
+    function openConfirmModal(md5s, isBatch = false) {
+        toDeleteMd5s = md5s;
+        const msg = document.getElementById('modalMessage');
+        if (isBatch && md5s.length > 1) {
+            msg.innerHTML = `确定要删除这 <strong>${md5s.length}</strong> 个文档吗？<br>删除后无法恢复！`;
+        } else {
+            msg.innerHTML = '确定要删除该文档吗？<br>删除后无法恢复！';
         }
+        document.getElementById('confirmModal').classList.add('active');
+    }
 
-        if (typeof dateTimeStr === 'string') {
-            const cleaned = dateTimeStr
-                .split('.')[0]
-                .replace('T', ' ');
+    async function performDelete() {
+        if (toDeleteMd5s.length === 0) return;
 
-            // 简单验证是否符合日期时间格局
-            if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(cleaned)) {
-                return cleaned;
+        try {
+            const res = await fetch('/app/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(toDeleteMd5s)
+            });
+            const data = await res.json();
+
+            if (data.code === 0) {
+                showToast(`删除成功（${toDeleteMd5s.length} 个）`, 'success');
+                loadDocs(); // 刷新列表
+            } else {
+                showToast(data.msg || '删除失败', 'error');
             }
-
-            const date = new Date(dateTimeStr);
-            if (!isNaN(date.getTime())) {
-                return date.toLocaleString('zh-CN', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                }).replace(/\//g, '-');
-            }
+        } catch (err) {
+            showToast('删除请求失败，请检查网络', 'error');
+        } finally {
+            document.getElementById('confirmModal').classList.remove('active');
+            toDeleteMd5s = [];
         }
-
-        return '无效时间格式';
     }
 
     async function loadDocs() {
@@ -129,17 +285,27 @@
             const data = await res.json();
 
             const tbody = document.querySelector('#docTable tbody');
-            tbody.innerHTML = ''; // 清空
+            tbody.innerHTML = '';
 
             if (data.code === 0 && data.data && data.data.docs && data.data.docs.length > 0) {
                 data.data.docs.forEach(doc => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
+                        <td><input type="checkbox" class="row-checkbox" value="${doc.fileMd5}"></td>
                         <td>${doc.fileName || '未知文件名'}</td>
                         <td>${formatDateTime(doc.createdAt)}</td>
+                        <td><button class="delete-btn" data-md5="${doc.fileMd5}">删除</button></td>
                     `;
                     tbody.appendChild(tr);
                 });
+
+                // 绑定单删事件
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        openConfirmModal([btn.dataset.md5]);
+                    };
+                });
+
                 document.getElementById('docTable').style.display = 'table';
                 document.getElementById('emptyMsg').style.display = 'none';
             } else {
@@ -152,7 +318,58 @@
             document.getElementById('emptyMsg').style.display = 'block';
             document.getElementById('docTable').style.display = 'none';
         }
+
+        // 重置批量选择状态
+        document.getElementById('selectAll').checked = false;
+        document.getElementById('batchDeleteBtn').disabled = true;
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
     }
+
+    // 全选逻辑
+    document.getElementById('selectAll').onchange = function () {
+        document.querySelectorAll('.row-checkbox').forEach(cb => {
+            cb.checked = this.checked;
+        });
+        updateBatchButton();
+    };
+
+    // 行复选框变化时更新批量按钮状态
+    document.addEventListener('change', e => {
+        if (e.target.classList.contains('row-checkbox')) {
+            updateBatchButton();
+            // 检查是否全选
+            const allChecked = Array.from(document.querySelectorAll('.row-checkbox')).every(cb => cb.checked);
+            document.getElementById('selectAll').checked = allChecked;
+        }
+    });
+
+    function updateBatchButton() {
+        const checked = document.querySelectorAll('.row-checkbox:checked');
+        document.getElementById('batchDeleteBtn').disabled = checked.length === 0;
+    }
+
+    // 批量删除按钮
+    document.getElementById('batchDeleteBtn').onclick = () => {
+        const checked = document.querySelectorAll('.row-checkbox:checked');
+        if (checked.length === 0) return;
+        const md5s = Array.from(checked).map(cb => cb.value);
+        openConfirmModal(md5s, true);
+    };
+
+    // 模态框按钮
+    document.getElementById('cancelDelete').onclick = () => {
+        document.getElementById('confirmModal').classList.remove('active');
+        toDeleteMd5s = [];
+    };
+    document.getElementById('confirmDelete').onclick = performDelete;
+
+    // 点击模态框背景关闭
+    document.getElementById('confirmModal').onclick = e => {
+        if (e.target === document.getElementById('confirmModal')) {
+            document.getElementById('confirmModal').classList.remove('active');
+            toDeleteMd5s = [];
+        }
+    };
 
     loadDocs();
 </script>

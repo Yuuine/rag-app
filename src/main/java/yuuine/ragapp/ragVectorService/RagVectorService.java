@@ -11,4 +11,6 @@ public interface RagVectorService {
     VectorAddResult add(List<VectorAddRequest> chunks);
 
     List<VectorSearchResult> search(InferenceRequest query);
+
+    void deleteChunksByFileMd5s(List<String> fileMd5s);
 }
